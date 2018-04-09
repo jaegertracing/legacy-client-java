@@ -15,7 +15,7 @@ The release process consists of these steps:
   1. Once the artifacts are available on Maven
      * bump the version in `build.gradle` to `major.minor.(patch+1)-SNAPSHOT`
      * add a new section to the CHANGELOG with that version as `(unreleased)` and a bullet point `- Nothing yet`
-     * commit with the comment "Back to development" (for example, https://github.com/jaegertracing/jaeger-client-java/commit/da9726d3ba7309947882e3c621516c70b4bc83dc)
+     * commit with the comment "Back to development" (for example, https://github.com/jaegertracing/legacy-client-java/commit/da9726d3ba7309947882e3c621516c70b4bc83dc)
 
 ## Local setup and release
 

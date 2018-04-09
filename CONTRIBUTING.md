@@ -26,7 +26,7 @@ the [IntelliJ plugin](https://plugins.jetbrains.com/plugin/6317) to add IDE supp
 
 ## Making A Change
 
-*Before making any significant changes, please [open an issue](https://github.com/jaegertracing/jaeger-client-java/issues).*
+*Before making any significant changes, please [open an issue](https://github.com/jaegertracing/legacy-client-java/issues).*
 Discussing your proposed changes ahead of time will make the contribution process smooth for everyone.
 
 Once we've discussed your changes and you've got your code ready, make sure
