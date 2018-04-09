@@ -3,7 +3,7 @@
 ## Deprecated
 
 This is a legacy repository with `com.uber.jaeger` package name. It is maintained for bug fixes.
-Issues and pull requests with new functionality submit to [jaeger-client-java](https://github.com/jaegertracing/jaeger-client-java).
+Issues and pull requests with new functionality please submit to [jaeger-client-java](https://github.com/jaegertracing/jaeger-client-java).
 
 # Jaeger's Tracing Instrumentation Library for Java
 
