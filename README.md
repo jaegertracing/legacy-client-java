@@ -2,6 +2,9 @@
 
 # Jaeger's Tracing Instrumentation Library for Java
 
+This is a legacy repository with `com.uber.jaeger` package name. It is maintained for bug fixes.
+Issues and pull requests with new functionality submit to [jaeger-client-java](https://github.com/jaegertracing/jaeger-client-java).
+
  * Intended to be used with [Jaeger](https://github.com/uber/jaeger) backend, but can also be configured to send traces to Zipkin.
  * Implement [Java OpenTracing API](https://github.com/opentracing/opentracing-java).
  * Supports Java 1.6 and above
