@@ -56,6 +56,10 @@ import java.util.Properties;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * @deprecated use package {@code io.jaegertracing} instead
+ */
+@Deprecated
 @ToString(exclude = {"registry", "clock", "metrics", "scopeManager"})
 @Slf4j
 public class Tracer implements io.opentracing.Tracer, Closeable {
@@ -454,7 +458,9 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
 
   /**
    * Builds Jaeger Tracer with options.
+   * @deprecated use package {@code io.jaegertracing} instead
    */
+  @Deprecated
   public static final class Builder {
     private Sampler sampler;
     private Reporter reporter;
