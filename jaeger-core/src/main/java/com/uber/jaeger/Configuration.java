@@ -53,6 +53,7 @@ import lombok.extern.slf4j.Slf4j;
  * configuration is provided in environmental or property variables. It also simplifies creation
  * of the client from configuration files.
  */
+@Deprecated
 @Slf4j
 public class Configuration {
   /**

@@ -18,6 +18,10 @@ import com.uber.jaeger.Configuration;
 
 import io.opentracing.contrib.tracerresolver.TracerResolver;
 
+/**
+ * @deprecated use package {@code io.jaegertracing} instead
+ */
+@Deprecated
 public class JaegerTracerResolver extends TracerResolver {
 
   @Override
