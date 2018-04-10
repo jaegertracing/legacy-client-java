@@ -52,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
  * This class is designed to provide {@link Tracer} or {@link Tracer.Builder} when Jaeger client
  * configuration is provided in environmental or property variables. It also simplifies creation
  * of the client from configuration files.
+ * @deprecated use package {@code io.jaegertracing} instead
  */
 @Deprecated
 @Slf4j
