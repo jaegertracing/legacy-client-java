@@ -32,9 +32,9 @@ uploadArchives {
                 url 'https://github.com/uber/legacy-client-java'
 
                 scm {
-                    connection 'scm:git:git@github.com:uber/legacy-client-java.git'
-                    developerConnection 'scm:git:git@github.com:uber/legacy-client-java.git'
-                    url 'git@github.com:uber/legacy-client-java.git'
+                    connection 'scm:git:git@github.com:jaegertracing/legacy-client-java.git'
+                    developerConnection 'scm:git:git@github.com:jaegertracing/legacy-client-java.git'
+                    url 'git@github.com:jaegertracing/legacy-client-java.git'
                 }
 
                 licenses {
