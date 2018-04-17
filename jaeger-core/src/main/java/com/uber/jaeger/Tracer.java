@@ -57,7 +57,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @deprecated use package {@code io.jaegertracing} instead
+ * @deprecated use package {@code io.jaegertracing} instead. See https://github.com/jaegertracing/legacy-client-java/issues/13
  */
 @Deprecated
 @ToString(exclude = {"registry", "clock", "metrics", "scopeManager"})
@@ -458,7 +458,7 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
 
   /**
    * Builds Jaeger Tracer with options.
-   * @deprecated use package {@code io.jaegertracing} instead
+   * @deprecated use package {@code io.jaegertracing} instead. See https://github.com/jaegertracing/legacy-client-java/issues/13
    */
   @Deprecated
   public static final class Builder {
