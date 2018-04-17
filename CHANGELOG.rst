@@ -1,9 +1,14 @@
 Changes by Version
 ==================
 
-0.26.1 (unreleased)
+0.27.0 (2018-04-17)
 -------------------
-- Nothing yet.
+- Deprecate tracer (#5) (6 days ago) <Pavol Loffay>
+- Remove reference to JAEGER_DISABLE_GLOBAL_TRACER (#379) <Charlie Sharpsteen>
+- Avoid direct access to apache thrift from jaeger-core (#374) <Gary Brown>
+- [apache-http] Make TracingRequestInterceptor get span from http request context (#378) <Debosmit Ray>
+- Define some HttpSenderBuilder methods as public (#376) <Pavol Loffay>
+- Point IDL submodule git link to jaegertracing org (#377) <Pavol Loffay>
 
 0.26.0 (2018-03-19)
 -------------------
