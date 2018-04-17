@@ -37,6 +37,8 @@ task wrapper(type: Wrapper) {
     gradleVersion = '4.0'
 }
 
+assert file("./idl/thrift/jaeger.thrift").exists(), "make sure you ran 'git submodule update --init --recursive'"
+
 allprojects {
     apply plugin: 'idea' // intellij support
     apply plugin: 'jacoco'
@@ -143,7 +145,6 @@ subprojects {
         compileOnly 'org.projectlombok:lombok:1.16.18'
         compileOnly 'org.codehaus.mojo:animal-sniffer-annotations:1.16'
     }
-
 }
 
 task codeCoverageReport(type: JacocoReport, group: 'Coverage reports') {

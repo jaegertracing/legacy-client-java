@@ -29,6 +29,12 @@ if [ "${TRAVIS_SECURE_ENV_VARS}" == true ]; then
     echo ossrhPassword="${SONATYPE_PASSWORD}" >> "$HOME/.gradle/gradle.properties"
     echo signing.secretKeyRingFile="${HOME}/.gnupg/secring.gpg" >> "$HOME/.gradle/gradle.properties"
 else
+    rm -rf "$HOME/.gradle/gradle.properties"
+    echo signing.keyId="invalid-secret" > "$HOME/.gradle/gradle.properties"
+    echo signing.password="invalid-secret" >> "$HOME/.gradle/gradle.properties"
+    echo ossrhUsername="invalid-secret" >> "$HOME/.gradle/gradle.properties"
+    echo ossrhPassword="invalid-secret" >> "$HOME/.gradle/gradle.properties"
+    echo signing.secretKeyRingFile="${HOME}/.gnupg/secring.gpg" >> "$HOME/.gradle/gradle.properties"
     echo "Travis secure env vars not set. Skipping."
     exit 0
 fi
