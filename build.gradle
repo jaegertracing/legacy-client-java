@@ -37,6 +37,7 @@ task wrapper(type: Wrapper) {
     gradleVersion = '4.0'
 }
 
+println "Checking if this is a pull request: TRAVIS_PULL_REQUEST = " + System.env.TRAVIS_PULL_REQUEST
 println "Checking if this is a pull request   : " + (System.env.TRAVIS_PULL_REQUEST == "true")
 println "Checking if should publish artifacts : " + shouldPublish()
 assert file("./idl/thrift/jaeger.thrift").exists(), "make sure you ran 'git submodule update --init --recursive'"
