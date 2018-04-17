@@ -3,14 +3,6 @@
 ENCRYPTION_KEY=$1
 ENCRYPTION_IV=$2
 
-# prepare fake file first, in case other checks fail
-rm -rf "$HOME/.gradle/gradle.properties"
-echo signing.keyId="invalid-secret" > "$HOME/.gradle/gradle.properties"
-echo signing.password="invalid-secret" >> "$HOME/.gradle/gradle.properties"
-echo ossrhUsername="invalid-secret" >> "$HOME/.gradle/gradle.properties"
-echo ossrhPassword="invalid-secret" >> "$HOME/.gradle/gradle.properties"
-echo signing.secretKeyRingFile="${HOME}/.gnupg/secring.gpg" >> "$HOME/.gradle/gradle.properties"
-
 # some sanity checks first:
 if [ "x${ENCRYPTION_KEY}" == "x" ]; then
     echo "The encryption key has not been provided. Skipping signing preparation"
