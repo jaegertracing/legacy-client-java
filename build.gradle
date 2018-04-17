@@ -206,5 +206,5 @@ def shouldPublish() {
         return false
     }
     String candidateVersion = getVersionForBuild()
-    return !candidateVersion..endsWith("SNAPSHOT")
+    return !candidateVersion.endsWith("SNAPSHOT")
 }
