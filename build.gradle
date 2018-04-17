@@ -76,7 +76,7 @@ subprojects {
         }
     }
 
-    if (!version.endsWith("SNAPSHOT")) {
+    if (shouldPublish()) {
         nexusStaging {
             packageGroup = "com.uber"
             username = ossrhUsername
@@ -173,14 +173,14 @@ task codeCoverageReport(type: JacocoReport, group: 'Coverage reports') {
 }
 
 task printVersion {
-    println getVersionForBuild()
+    println 'version: ' + getVersionForBuild()
 }
 
 configure(subprojects.findAll {it.name != 'jaeger-thrift'}) {
-   apply plugin: 'net.ltgt.errorprone'
-   dependencies {
-     errorprone 'com.google.errorprone:error_prone_core:2.1.1'
-   }
+    apply plugin: 'net.ltgt.errorprone'
+    dependencies {
+        errorprone 'com.google.errorprone:error_prone_core:2.1.1'
+    }
     tasks.withType(JavaCompile) {
         // These are disabled because of a bug with errorprone. See https://github.com/google/error-prone/issues/750
         options.compilerArgs += [ '-Xep:NestedInstanceOfConditions:OFF',  '-Xep:InstanceOfAndCastMatchWrongType:OFF' ]
@@ -199,4 +199,12 @@ def getVersionForBuild() {
     }
 
     return ext.developmentVersion
+}
+
+def shouldPublish() {
+    if (System.env.TRAVIS_PULL_REQUEST == "true") {
+        return false
+    }
+    String candidateVersion = getVersionForBuild()
+    return !candidateVersion..endsWith("SNAPSHOT")
 }
