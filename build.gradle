@@ -46,6 +46,7 @@ allprojects {
 
     group = 'com.uber.jaeger'
     version = getVersionForBuild()
+    ext.isReleaseVersion = shouldPublish()
 
     repositories {
         mavenLocal()
