@@ -37,10 +37,7 @@ task wrapper(type: Wrapper) {
     gradleVersion = '4.0'
 }
 
-println "Checking TRAVIS_PULL_REQUEST         : " + System.env.TRAVIS_PULL_REQUEST
-println "Checking if this is a pull request   : " + isPullRequest()
 println "Checking if should publish artifacts : " + shouldPublish()
-
 assert file("./idl/thrift/jaeger.thrift").exists(), "make sure you ran 'git submodule update --init --recursive'"
 
 allprojects {
@@ -192,28 +189,29 @@ configure(subprojects.findAll {it.name != 'jaeger-thrift'}) {
     }
 }
 
-def getVersionForBuild() {
+def getVersionFromTag() {
     String candidateVersion = System.env.TRAVIS_TAG
 
     if (null == candidateVersion || candidateVersion.isEmpty()) {
-        return ext.developmentVersion
+        return null
     }
 
     if (Pattern.compile("[v]?((\\d+)\\.(\\d+)\\.(\\d+))(\\-RC\\d+)?").matcher(candidateVersion).matches()) {
         return candidateVersion.drop(1)
     }
 
+    return null
+}
+
+def getVersionForBuild() {
+    String candidateVersion = getVersionFromTag()
+    if (candidateVersion != null) {
+        return candidateVersion
+    }
     return ext.developmentVersion
 }
 
-def isPullRequest() {
-    return (System.env.TRAVIS_PULL_REQUEST != null && System.env.TRAVIS_PULL_REQUEST != "false")
-}
-
 def shouldPublish() {
-    if (isPullRequest()) {
-        return false
-    }
-    String candidateVersion = getVersionForBuild()
-    return !candidateVersion.endsWith("SNAPSHOT")
+    String candidateVersion = getVersionFromTag()
+    return candidateVersion != null
 }
