@@ -1,4 +1,4 @@
-ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+// ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 def getRepositoryUsername() {
     return hasProperty('ossrhUsername') ? ossrhUsername : ""
