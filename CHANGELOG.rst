@@ -3,7 +3,7 @@ Changes by Version
 
 0.27.0 (2018-04-17)
 -------------------
-- Deprecate tracer (#5) (6 days ago) <Pavol Loffay>
+- Deprecate tracer (#5) <Pavol Loffay>
 - Remove reference to JAEGER_DISABLE_GLOBAL_TRACER (#379) <Charlie Sharpsteen>
 - Avoid direct access to apache thrift from jaeger-core (#374) <Gary Brown>
 - [apache-http] Make TracingRequestInterceptor get span from http request context (#378) <Debosmit Ray>
