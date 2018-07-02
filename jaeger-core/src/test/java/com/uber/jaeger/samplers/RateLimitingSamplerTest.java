@@ -15,16 +15,24 @@
 package com.uber.jaeger.samplers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 import org.junit.Test;
 
-public class TestRateLimitingSampler {
+public class RateLimitingSamplerTest {
   @Test
   public void testTags() {
     RateLimitingSampler sampler = new RateLimitingSampler(123);
     Map<String, Object> tags = sampler.sample("operate", 11).getTags();
     assertEquals("ratelimiting", tags.get("sampler.type"));
     assertEquals(123.0, tags.get("sampler.param"));
+
+    assertFalse(sampler.update(123));
+
+    assertTrue(sampler.update(42));
+    tags = sampler.sample("operate", 11).getTags();
+    assertEquals(42.0, tags.get("sampler.param"));
   }
 }

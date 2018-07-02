@@ -14,25 +14,47 @@
 
 package com.uber.jaeger.utils;
 
+import java.util.Random;
+
 public class RateLimiter {
-  private final double creditsPerNanosecond;
+
+  private static final double SECONDS_IN_NANOSECONDS = 1.0e9;
+
+  private double creditsPerNanosecond;
   private final Clock clock;
   private double balance;
   private double maxBalance;
   private long lastTick;
 
   public RateLimiter(double creditsPerSecond, double maxBalance) {
-    this(creditsPerSecond, maxBalance, new SystemClock());
+    this(creditsPerSecond, maxBalance, new SystemClock(), maxBalance * new Random().nextDouble());
   }
 
-  public RateLimiter(double creditsPerSecond, double maxBalance, Clock clock) {
+  public RateLimiter(double creditsPerSecond, double maxBalance, Clock clock, double initialBalance) {
     this.clock = clock;
-    this.balance = maxBalance;
+    this.balance = initialBalance;
     this.maxBalance = maxBalance;
-    this.creditsPerNanosecond = creditsPerSecond / 1.0e9;
+    this.creditsPerNanosecond = creditsPerSecond / SECONDS_IN_NANOSECONDS;
+  }
+
+  public void update(double creditsPerSecond, double maxBalance) {
+    updateBalance();
+    creditsPerNanosecond = creditsPerSecond / SECONDS_IN_NANOSECONDS;
+    // The new balance should be proportional to the old balance.
+    balance = maxBalance * balance / this.maxBalance;
+    this.maxBalance = maxBalance;
   }
 
   public boolean checkCredit(double itemCost) {
+    updateBalance();
+    if (balance >= itemCost) {
+      balance -= itemCost;
+      return true;
+    }
+    return false;
+  }
+
+  private void updateBalance() {
     long currentTime = clock.currentNanoTicks();
     double elapsedTime = currentTime - lastTick;
     lastTick = currentTime;
@@ -40,10 +62,5 @@ public class RateLimiter {
     if (balance > maxBalance) {
       balance = maxBalance;
     }
-    if (balance >= itemCost) {
-      balance -= itemCost;
-      return true;
-    }
-    return false;
   }
 }
