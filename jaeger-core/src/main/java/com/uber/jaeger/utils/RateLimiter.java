@@ -19,6 +19,7 @@ import java.util.Random;
 public class RateLimiter {
 
   private static final double SECONDS_IN_NANOSECONDS = 1.0e9;
+  private static final Random RANDOM = new Random();
 
   private double creditsPerNanosecond;
   private final Clock clock;
@@ -27,7 +28,7 @@ public class RateLimiter {
   private long lastTick;
 
   public RateLimiter(double creditsPerSecond, double maxBalance) {
-    this(creditsPerSecond, maxBalance, new SystemClock(), maxBalance * new Random().nextDouble());
+    this(creditsPerSecond, maxBalance, new SystemClock(), maxBalance * RANDOM.nextDouble());
   }
 
   public RateLimiter(double creditsPerSecond, double maxBalance, Clock clock, double initialBalance) {

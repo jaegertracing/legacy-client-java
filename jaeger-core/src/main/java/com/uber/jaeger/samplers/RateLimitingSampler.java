@@ -25,6 +25,7 @@ import lombok.ToString;
 @ToString(exclude = "rateLimiter")
 public class RateLimitingSampler implements Sampler {
   public static final String TYPE = "ratelimiting";
+  private static final double MINUMUM_BALANCE = 1.0;
 
   private final RateLimiter rateLimiter;
   @Getter
@@ -42,7 +43,7 @@ public class RateLimitingSampler implements Sampler {
 
   @Override
   public synchronized SamplingStatus sample(String operation, long id) {
-    return SamplingStatus.of(this.rateLimiter.checkCredit(1.0), tags);
+    return SamplingStatus.of(this.rateLimiter.checkCredit(MINUMUM_BALANCE), tags);
   }
 
   @Override
@@ -67,7 +68,7 @@ public class RateLimitingSampler implements Sampler {
   }
 
   private double getMaxBalance(double maxTracesPerSecond) {
-    return maxTracesPerSecond < 1.0 ? 1.0 : maxTracesPerSecond;
+    return maxTracesPerSecond < MINUMUM_BALANCE ? MINUMUM_BALANCE : maxTracesPerSecond;
   }
 
   /**
