@@ -29,8 +29,10 @@ import com.uber.jaeger.samplers.http.PerOperationSamplingParameters;
 import com.uber.jaeger.samplers.http.ProbabilisticSamplingStrategy;
 import com.uber.jaeger.samplers.http.RateLimitingSamplingStrategy;
 import com.uber.jaeger.samplers.http.SamplingStrategyResponse;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,8 +63,8 @@ public class RemoteControlledSamplerTest {
   @Test
   public void testUpdateToProbabilisticSampler() throws Exception {
     final double samplingRate = 0.55;
-    SamplingStrategyResponse probabilisticResponse = new SamplingStrategyResponse(
-        new ProbabilisticSamplingStrategy(samplingRate), null, null);
+    SamplingStrategyResponse probabilisticResponse =
+        new SamplingStrategyResponse(new ProbabilisticSamplingStrategy(samplingRate), null, null);
     when(samplingManager.getSamplingStrategy(SERVICE_NAME)).thenReturn(probabilisticResponse);
 
     undertest.updateSampler();
@@ -73,8 +75,8 @@ public class RemoteControlledSamplerTest {
   @Test
   public void testUpdateToRateLimitingSampler() throws Exception {
     final int tracesPerSecond = 22;
-    SamplingStrategyResponse rateLimitingResponse = new SamplingStrategyResponse(null,
-        new RateLimitingSamplingStrategy(tracesPerSecond), null);
+    SamplingStrategyResponse rateLimitingResponse =
+        new SamplingStrategyResponse(null, new RateLimitingSamplingStrategy(tracesPerSecond), null);
     when(samplingManager.getSamplingStrategy(SERVICE_NAME)).thenReturn(rateLimitingResponse);
 
     undertest.updateSampler();
@@ -85,11 +87,11 @@ public class RemoteControlledSamplerTest {
   @Test
   public void testUpdateToPerOperationSamplerReplacesProbabilisticSampler() throws Exception {
     List<PerOperationSamplingParameters> operationToSampler = new ArrayList<>();
-    operationToSampler.add(new PerOperationSamplingParameters("operation",
-        new ProbabilisticSamplingStrategy(0.1)));
-    OperationSamplingParameters parameters = new OperationSamplingParameters(0.11, 0.22, operationToSampler);
-    SamplingStrategyResponse response = new SamplingStrategyResponse(null,
-        null, parameters);
+    operationToSampler.add(
+        new PerOperationSamplingParameters("operation", new ProbabilisticSamplingStrategy(0.1)));
+    OperationSamplingParameters parameters =
+        new OperationSamplingParameters(0.11, 0.22, operationToSampler);
+    SamplingStrategyResponse response = new SamplingStrategyResponse(null, null, parameters);
     when(samplingManager.getSamplingStrategy(SERVICE_NAME)).thenReturn(response);
 
     undertest.updateSampler();
@@ -103,26 +105,29 @@ public class RemoteControlledSamplerTest {
   public void testUpdatePerOperationSamplerUpdatesExistingPerOperationSampler() throws Exception {
     PerOperationSampler perOperationSampler = mock(PerOperationSampler.class);
     OperationSamplingParameters parameters = mock(OperationSamplingParameters.class);
-    when(samplingManager.getSamplingStrategy(SERVICE_NAME)).thenReturn(
-        new SamplingStrategyResponse(null, null, parameters));
-    undertest = new RemoteControlledSampler(SERVICE_NAME, samplingManager, perOperationSampler, metrics);
+    when(samplingManager.getSamplingStrategy(SERVICE_NAME))
+        .thenReturn(new SamplingStrategyResponse(null, null, parameters));
+    undertest =
+        new RemoteControlledSampler(SERVICE_NAME, samplingManager, perOperationSampler, metrics);
 
     undertest.updateSampler();
     Thread.sleep(20);
-    //updateSampler is hit once automatically because of the pollTimer
+    // updateSampler is hit once automatically because of the pollTimer
     verify(perOperationSampler, times(2)).update(parameters);
   }
 
   @Test
   public void testNullResponse() throws Exception {
-    when(samplingManager.getSamplingStrategy(SERVICE_NAME)).thenReturn(new SamplingStrategyResponse(null, null, null));
+    when(samplingManager.getSamplingStrategy(SERVICE_NAME))
+        .thenReturn(new SamplingStrategyResponse(null, null, null));
     undertest.updateSampler();
     assertEquals(initialSampler, undertest.getSampler());
   }
 
   @Test
   public void testUnparseableResponse() throws Exception {
-    when(samplingManager.getSamplingStrategy(SERVICE_NAME)).thenThrow(new SamplingStrategyErrorException("test"));
+    when(samplingManager.getSamplingStrategy(SERVICE_NAME))
+        .thenThrow(new SamplingStrategyErrorException("test"));
     undertest.updateSampler();
     assertEquals(initialSampler, undertest.getSampler());
   }
@@ -135,8 +140,8 @@ public class RemoteControlledSamplerTest {
 
   @Test
   public void testEquals() {
-    RemoteControlledSampler i2 = new RemoteControlledSampler(SERVICE_NAME, samplingManager,
-        mock(Sampler.class), metrics);
+    RemoteControlledSampler i2 =
+        new RemoteControlledSampler(SERVICE_NAME, samplingManager, mock(Sampler.class), metrics);
 
     assertEquals(undertest, undertest);
     assertNotEquals(undertest, initialSampler);
@@ -149,5 +154,4 @@ public class RemoteControlledSamplerTest {
     undertest = new RemoteControlledSampler(SERVICE_NAME, samplingManager, null, metrics);
     assertEquals(new ProbabilisticSampler(0.001), undertest.getSampler());
   }
-
 }

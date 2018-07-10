@@ -14,23 +14,24 @@
 
 package com.uber.jaeger.throttler;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import com.uber.jaeger.mocks.MockAgentResource;
 import com.uber.jaeger.throttler.http.CreditResponse;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import javax.ws.rs.core.Application;
+
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.ws.rs.core.Application;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class HttpThrottlerProxyTest extends JerseyTest {
   private static Properties originalProps;
@@ -76,6 +77,6 @@ public class HttpThrottlerProxyTest extends JerseyTest {
       return;
     }
 
-    assert(false);
+    assert false;
   }
 }

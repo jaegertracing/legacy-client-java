@@ -1,5 +1,13 @@
 package com.uber.jaeger.throttler;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.uber.jaeger.TracedProcess;
 import com.uber.jaeger.metrics.InMemoryMetricsFactory;
 import com.uber.jaeger.metrics.Metrics;
@@ -15,12 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RemoteThrottlerTest {
@@ -46,8 +48,8 @@ public class RemoteThrottlerTest {
 
   @Test
   public void testFetchCredits() throws Exception {
-    final int REFRESH_INTERVAL_MS = 10;
-    throttler = new RemoteThrottler(proxy, metrics, REFRESH_INTERVAL_MS, true);
+    final int refreshIntervalMs = 10;
+    throttler = new RemoteThrottler(proxy, metrics, refreshIntervalMs, true);
     throttler.isAllowed(OPERATION_NAME);
     final List<OperationBalance> operationBalances =
         Collections.singletonList(new OperationBalance(OPERATION_NAME, 1));
@@ -55,12 +57,12 @@ public class RemoteThrottlerTest {
     when(proxy.getCredits(eq(CLIENT_ID), eq(SERVICE_NAME), anyList()))
         .thenReturn(response)
         .thenReturn(new CreditResponse(Collections.EMPTY_LIST));
-    verify(proxy, timeout(REFRESH_INTERVAL_MS * 3).times(0))
+    verify(proxy, timeout(refreshIntervalMs * 10).times(0))
         .getCredits(eq(CLIENT_ID), eq(SERVICE_NAME), anyList());
 
     throttler.setProcess(new TracedProcess(SERVICE_NAME, 123, Collections.EMPTY_MAP));
     final List<String> operations = Collections.singletonList(OPERATION_NAME);
-    verify(proxy, timeout(REFRESH_INTERVAL_MS * 10).atLeastOnce())
+    verify(proxy, timeout(refreshIntervalMs * 10).atLeastOnce())
         .getCredits(eq(CLIENT_ID), eq(SERVICE_NAME), eq(operations));
     assertTrue(
         metricsFactory.getCounter(
@@ -73,12 +75,12 @@ public class RemoteThrottlerTest {
 
   @Test
   public void testNullResponse() throws Exception {
-    final int REFRESH_INTERVAL_MS = 10;
-    throttler = new RemoteThrottler(proxy, metrics, REFRESH_INTERVAL_MS, false);
+    final int refreshIntervalMs = 10;
+    throttler = new RemoteThrottler(proxy, metrics, refreshIntervalMs, false);
     throttler.setProcess(new TracedProcess(SERVICE_NAME, 123, Collections.EMPTY_MAP));
     throttler.isAllowed(OPERATION_NAME);
     final List<String> operations = Collections.singletonList(OPERATION_NAME);
-    verify(proxy, timeout(REFRESH_INTERVAL_MS * 10).atLeastOnce())
+    verify(proxy, timeout(refreshIntervalMs * 10).atLeastOnce())
         .getCredits(eq(CLIENT_ID), eq(SERVICE_NAME), eq(operations));
     assertTrue(
         metricsFactory.getCounter(
