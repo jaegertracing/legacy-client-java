@@ -20,6 +20,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @Path("")
 public class MockAgentResource {
@@ -41,6 +42,26 @@ public class MockAgentResource {
   public String getBaggageRestrictions(@QueryParam("service") String serviceName) {
     if (serviceName.equals("clairvoyant")) {
       return "[{\"baggageKey\":\"key\",\"maxValueLength\":\"10\"}]";
+    }
+    throw new WebApplicationException();
+  }
+
+  @GET
+  @Path("credits")
+  @Produces(MediaType.APPLICATION_JSON)
+  public String getCredits(@QueryParam("uuid") int clientId,
+                           @QueryParam("service") String serviceName,
+                           @QueryParam("operations") List<String> operations) {
+    if (serviceName.equals("clairvoyant")) {
+      StringBuffer buffer = new StringBuffer("{ \"balances\": [");
+      for (int i = 0; i < operations.size(); i++) {
+        if (i > 0) {
+          buffer.append(", ");
+        }
+        buffer.append("{ \"operation\": \"" + operations.get(i) + "\", \"balance\": 1 }");
+      }
+      buffer.append("]}");
+      return buffer.toString();
     }
     throw new WebApplicationException();
   }

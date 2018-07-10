@@ -215,4 +215,16 @@ public class Metrics {
   @Metric(name = "baggage_restrictions_updates", tags = @Tag(key = "result", value = "err"))
   // Number of times baggage restrictions failed to update.
   public Counter baggageRestrictionsUpdateFailure;
+
+  @Metric(name = "throttled_debug_spans")
+  // Number of times debug spans were throttled.
+  public Counter throttledDebugSpans;
+
+  @Metric(name = "throttler_updates", tags = @Tag(key = "result", value = "ok"))
+  // Number of times throttler successfully updated.
+  public Counter throttlerUpdateSuccess;
+
+  @Metric(name = "throttler_updates", tags = @Tag(key = "result", value = "err"))
+  // Number of times throttler failed to update.
+  public Counter throttlerUpdateFailure;
 }

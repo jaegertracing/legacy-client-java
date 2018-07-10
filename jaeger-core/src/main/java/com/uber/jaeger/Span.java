@@ -202,11 +202,20 @@ public class Span implements io.opentracing.Span {
   private Span setTagAsObject(String key, Object value) {
     if (key.equals(Tags.SAMPLING_PRIORITY.getKey()) && (value instanceof Number)) {
       int priority = ((Number) value).intValue();
-      byte newFlags;
+
+      // Ignore debug spans trying to re-enable debug.
+      if (context.isDebug() && priority > 0) {
+        return this;
+      }
+
+      byte newFlags = context.getFlags();
       if (priority > 0) {
-        newFlags = (byte) (context.getFlags() | SpanContext.flagSampled | SpanContext.flagDebug);
+        if (!tracer.isDebugAllowed(operationName)) {
+          return this;
+        }
+        newFlags |= (byte) (SpanContext.flagSampled | SpanContext.flagDebug);
       } else {
-        newFlags = (byte) (context.getFlags() & (~SpanContext.flagSampled));
+        newFlags &= (byte) ~(SpanContext.flagSampled | SpanContext.flagDebug);
       }
 
       context = context.withFlags(newFlags);
@@ -265,7 +274,7 @@ public class Span implements io.opentracing.Span {
   }
 
   /**
-   * Creates logs related to logged exception
+   * Creates logs related to logged exception.
    *
    * @param fields map containing exception logs which are not present in fields
    * @return logged fields
