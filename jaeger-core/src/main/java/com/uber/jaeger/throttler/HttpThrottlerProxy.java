@@ -28,8 +28,7 @@ import java.util.List;
 
 public class HttpThrottlerProxy implements ThrottlerProxy {
   private static final String DEFAULT_HOST_PORT = "localhost:5778";
-  private static final Type RESPONSE_TYPE = new TypeToken<CreditResponse>() {
-  }.getType();
+  private static final Type RESPONSE_TYPE = new TypeToken<CreditResponse>() {}.getType();
   private final Gson gson = new Gson();
   private final String hostPort;
 
@@ -46,11 +45,8 @@ public class HttpThrottlerProxy implements ThrottlerProxy {
   }
 
   @Override
-  public CreditResponse getCredits(
-      int clientId,
-      String serviceName,
-      List<String> operations
-  ) throws ThrottlerException {
+  public CreditResponse getCredits(int clientId, String serviceName, List<String> operations)
+      throws ThrottlerException {
     String jsonString;
     try {
       StringBuffer operationsQueryBuffer = new StringBuffer();
@@ -59,9 +55,13 @@ public class HttpThrottlerProxy implements ThrottlerProxy {
       }
       jsonString =
           makeGetRequest(
-              "http://" + hostPort + "/credits?"
-                  + "uuid=" + URLEncoder.encode(Integer.toString(clientId), "UTF-8")
-                  + "&service=" + URLEncoder.encode(serviceName, "UTF-8")
+              "http://"
+                  + hostPort
+                  + "/credits?"
+                  + "uuid="
+                  + URLEncoder.encode(Integer.toString(clientId), "UTF-8")
+                  + "&service="
+                  + URLEncoder.encode(serviceName, "UTF-8")
                   + operationsQueryBuffer.toString());
     } catch (IOException e) {
       throw new ThrottlerException(

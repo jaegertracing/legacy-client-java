@@ -203,7 +203,8 @@ public class Span implements io.opentracing.Span {
     if (key.equals(Tags.SAMPLING_PRIORITY.getKey()) && (value instanceof Number)) {
       int priority = ((Number) value).intValue();
 
-      // Ignore debug spans trying to re-enable debug.
+      // Ignore debug spans trying to re-enable debug. Otherwise, the throttler
+      // may deduct credits for a span that is already has a debug flag.
       if (context.isDebug() && priority > 0) {
         return this;
       }
