@@ -14,29 +14,28 @@
 
 package com.uber.jaeger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.Configuration.SamplerConfiguration;
+import com.uber.jaeger.metrics.InMemoryMetricsFactory;
 import com.uber.jaeger.metrics.Metrics;
+import com.uber.jaeger.metrics.MetricsFactory;
 import com.uber.jaeger.metrics.NullStatsReporter;
 import com.uber.jaeger.metrics.StatsFactoryImpl;
 import com.uber.jaeger.samplers.ConstSampler;
-
 import com.uber.jaeger.samplers.ProbabilisticSampler;
 import com.uber.jaeger.samplers.RateLimitingSampler;
 import com.uber.jaeger.samplers.Sampler;
 import com.uber.jaeger.senders.HttpSender;
 import com.uber.jaeger.senders.Sender;
+import com.uber.jaeger.throttler.Throttler;
 import io.opentracing.noop.NoopTracerFactory;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.util.GlobalTracer;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.lang.reflect.Field;
 import java.net.SocketException;
 import java.util.HashMap;
@@ -44,9 +43,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class ConfigurationTest {
 
@@ -183,7 +180,8 @@ public class ConfigurationTest {
       Configuration.SenderConfiguration.fromEnv().getSender();
       fail("expecting exception");
     } catch (RuntimeException re) {
-      // we need to catch it here instead of using @Test(expected = ...) because the SocketException is
+      // we need to catch it here instead of using @Test(expected = ...) because the SocketException
+      // is
       // wrapped into a runtime exception
       assertTrue(re.getCause() instanceof SocketException);
     }
@@ -194,13 +192,14 @@ public class ConfigurationTest {
     System.setProperty(Configuration.JAEGER_AGENT_HOST, "jaeger-agent");
     System.setProperty(Configuration.JAEGER_AGENT_PORT, "6832");
     assertEquals("jaeger-agent", Configuration.ReporterConfiguration.fromEnv().getAgentHost());
-    assertEquals(Integer.valueOf(6832), Configuration.ReporterConfiguration.fromEnv().getAgentPort());
+    assertEquals(
+        Integer.valueOf(6832), Configuration.ReporterConfiguration.fromEnv().getAgentPort());
   }
 
   @Test
   public void testNoNullPointerOnNullSender() {
     Configuration.ReporterConfiguration reporterConfiguration =
-            new Configuration.ReporterConfiguration(null, null, null, null);
+        new Configuration.ReporterConfiguration(null, null, null, null);
     assertNull(reporterConfiguration.getAgentHost());
     assertNull(reporterConfiguration.getAgentPort());
 
@@ -218,15 +217,15 @@ public class ConfigurationTest {
     String endpoint = "https://custom-sender-endpoint:14268/api/traces";
     System.setProperty(Configuration.JAEGER_ENDPOINT, "https://jaeger-collector:14268/api/traces");
     CustomSender customSender = new CustomSender(endpoint);
-    Configuration.SenderConfiguration senderConfiguration = new Configuration.SenderConfiguration.Builder()
-            .sender(customSender)
-            .build();
-    assertEquals(endpoint, ((CustomSender)senderConfiguration.getSender()).getEndpoint());
+    Configuration.SenderConfiguration senderConfiguration =
+        new Configuration.SenderConfiguration.Builder().sender(customSender).build();
+    assertEquals(endpoint, ((CustomSender) senderConfiguration.getSender()).getEndpoint());
   }
 
   @Test
   public void testSenderWithBasicAuthUsesHttpSender() {
-    Configuration.SenderConfiguration senderConfiguration = new Configuration.SenderConfiguration.Builder()
+    Configuration.SenderConfiguration senderConfiguration =
+        new Configuration.SenderConfiguration.Builder()
             .endpoint("https://jaeger-collector:14268/api/traces")
             .authUsername("username")
             .authPassword("password")
@@ -236,7 +235,8 @@ public class ConfigurationTest {
 
   @Test
   public void testSenderWithAuthTokenUsesHttpSender() {
-    Configuration.SenderConfiguration senderConfiguration = new Configuration.SenderConfiguration.Builder()
+    Configuration.SenderConfiguration senderConfiguration =
+        new Configuration.SenderConfiguration.Builder()
             .endpoint("https://jaeger-collector:14268/api/traces")
             .authToken("authToken")
             .build();
@@ -261,7 +261,7 @@ public class ConfigurationTest {
     long spanId = 5678;
 
     TestTextMap textMap = new TestTextMap();
-    SpanContext spanContext = new SpanContext(traceId, spanId, 0, (byte)0);
+    SpanContext spanContext = new SpanContext(traceId, spanId, 0, (byte) 0);
 
     io.opentracing.Tracer tracer = Configuration.fromEnv().getTracer();
     tracer.inject(spanContext, Format.Builtin.TEXT_MAP, textMap);
@@ -270,7 +270,7 @@ public class ConfigurationTest {
     assertNotNull(textMap.get("X-B3-SpanId"));
     assertNull(textMap.get("uber-trace-id"));
 
-    SpanContext extractedContext = (SpanContext)tracer.extract(Format.Builtin.TEXT_MAP, textMap);
+    SpanContext extractedContext = (SpanContext) tracer.extract(Format.Builtin.TEXT_MAP, textMap);
     assertEquals(traceId, extractedContext.getTraceId());
     assertEquals(spanId, extractedContext.getSpanId());
   }
@@ -284,7 +284,7 @@ public class ConfigurationTest {
     long spanId = 5678;
 
     TestTextMap textMap = new TestTextMap();
-    SpanContext spanContext = new SpanContext(traceId, spanId, 0, (byte)0);
+    SpanContext spanContext = new SpanContext(traceId, spanId, 0, (byte) 0);
 
     io.opentracing.Tracer tracer = Configuration.fromEnv().getTracer();
     tracer.inject(spanContext, Format.Builtin.TEXT_MAP, textMap);
@@ -293,7 +293,7 @@ public class ConfigurationTest {
     assertNotNull(textMap.get("X-B3-TraceId"));
     assertNotNull(textMap.get("X-B3-SpanId"));
 
-    SpanContext extractedContext = (SpanContext)tracer.extract(Format.Builtin.TEXT_MAP, textMap);
+    SpanContext extractedContext = (SpanContext) tracer.extract(Format.Builtin.TEXT_MAP, textMap);
     assertEquals(traceId, extractedContext.getTraceId());
     assertEquals(spanId, extractedContext.getSpanId());
   }
@@ -303,7 +303,7 @@ public class ConfigurationTest {
     System.setProperty(Configuration.JAEGER_SERVICE_NAME, "Test");
 
     TestTextMap textMap = new TestTextMap();
-    SpanContext spanContext = new SpanContext(1234, 5678, 0, (byte)0);
+    SpanContext spanContext = new SpanContext(1234, 5678, 0, (byte) 0);
 
     Configuration.fromEnv().getTracer().inject(spanContext, Format.Builtin.TEXT_MAP, textMap);
 
@@ -318,7 +318,7 @@ public class ConfigurationTest {
     System.setProperty(Configuration.JAEGER_SERVICE_NAME, "Test");
 
     TestTextMap textMap = new TestTextMap();
-    SpanContext spanContext = new SpanContext(1234, 5678, 0, (byte)0);
+    SpanContext spanContext = new SpanContext(1234, 5678, 0, (byte) 0);
 
     Configuration.fromEnv().getTracer().inject(spanContext, Format.Builtin.TEXT_MAP, textMap);
 
@@ -343,41 +343,42 @@ public class ConfigurationTest {
   public void testUnknownSampler() {
     SamplerConfiguration samplerConfiguration = new SamplerConfiguration();
     samplerConfiguration.withType("unknown");
-    new Configuration("name")
-        .withSampler(samplerConfiguration)
-        .getTracer();
+    new Configuration("name").withSampler(samplerConfiguration).getTracer();
   }
 
   @Test
   public void testConstSampler() {
-    SamplerConfiguration samplerConfiguration = new SamplerConfiguration()
-        .withType(ConstSampler.TYPE);
-    Sampler sampler = samplerConfiguration.createSampler("name",
-        new Metrics(new StatsFactoryImpl(new NullStatsReporter())));
+    SamplerConfiguration samplerConfiguration =
+        new SamplerConfiguration().withType(ConstSampler.TYPE);
+    Sampler sampler =
+        samplerConfiguration.createSampler(
+            "name", new Metrics(new StatsFactoryImpl(new NullStatsReporter())));
     assertTrue(sampler instanceof ConstSampler);
   }
 
   @Test
   public void testProbabilisticSampler() {
-    SamplerConfiguration samplerConfiguration = new SamplerConfiguration()
-        .withType(ProbabilisticSampler.TYPE);
-    Sampler sampler = samplerConfiguration.createSampler("name",
-        new Metrics(new StatsFactoryImpl(new NullStatsReporter())));
+    SamplerConfiguration samplerConfiguration =
+        new SamplerConfiguration().withType(ProbabilisticSampler.TYPE);
+    Sampler sampler =
+        samplerConfiguration.createSampler(
+            "name", new Metrics(new StatsFactoryImpl(new NullStatsReporter())));
     assertTrue(sampler instanceof ProbabilisticSampler);
   }
 
   @Test
   public void testRateLimitingSampler() {
-    SamplerConfiguration samplerConfiguration = new SamplerConfiguration()
-        .withType(RateLimitingSampler.TYPE);
-    Sampler sampler = samplerConfiguration.createSampler("name",
-        new Metrics(new StatsFactoryImpl(new NullStatsReporter())));
+    SamplerConfiguration samplerConfiguration =
+        new SamplerConfiguration().withType(RateLimitingSampler.TYPE);
+    Sampler sampler =
+        samplerConfiguration.createSampler(
+            "name", new Metrics(new StatsFactoryImpl(new NullStatsReporter())));
     assertTrue(sampler instanceof RateLimitingSampler);
   }
 
   static class TestTextMap implements TextMap {
 
-    private Map<String,String> values = new HashMap<>();
+    private Map<String, String> values = new HashMap<>();
 
     @Override
     public Iterator<Entry<String, String>> iterator() {
@@ -405,5 +406,25 @@ public class ConfigurationTest {
     public String getEndpoint() {
       return endpoint;
     }
+  }
+
+  @Test
+  public void testThrottler() {
+    Configuration.ThrottlerConfiguration throttlerConfig =
+        new Configuration.ThrottlerConfiguration();
+    throttlerConfig
+        .withProxyHostPort("abcd:1234")
+        .withRefreshIntervalMs(1)
+        .withSynchronousInitialization(false);
+    assertEquals("abcd:1234", throttlerConfig.getProxyHostPort());
+    assertEquals(1, throttlerConfig.getRefreshIntervalMs());
+    assertFalse(throttlerConfig.getSynchronousInitialization());
+    MetricsFactory factory = new InMemoryMetricsFactory();
+    Metrics metrics = new Metrics(factory);
+    Configuration config = new Configuration("test-service");
+    config.withThrottler(throttlerConfig);
+    assertEquals(throttlerConfig, config.getThrottler());
+    Throttler throttler = config.getThrottler().createThrottler(metrics);
+    assertNotNull(throttler);
   }
 }
