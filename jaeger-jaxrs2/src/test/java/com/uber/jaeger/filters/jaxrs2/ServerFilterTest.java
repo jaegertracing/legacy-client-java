@@ -18,12 +18,12 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.uber.jaeger.Constants;
 import com.uber.jaeger.Span;
 import com.uber.jaeger.Tracer;
 import com.uber.jaeger.propagation.FilterIntegrationTest;
 import com.uber.jaeger.reporters.InMemoryReporter;
 import com.uber.jaeger.samplers.ConstSampler;
+import io.jaegertracing.internal.Constants;
 import io.opentracing.tag.Tags;
 import java.net.URI;
 import java.util.List;
@@ -39,8 +39,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
- * Tests that {@link ServerFilter} produces a span and sets tags correctly See also:
- * {@link FilterIntegrationTest} for a complete Client/Server filter integration test
+ * Tests that {@link ServerFilter} produces a span and sets tags correctly See also: {@link
+ * FilterIntegrationTest} for a complete Client/Server filter integration test
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ServerFilterTest {
@@ -55,7 +55,9 @@ public class ServerFilterTest {
   public void setUp() {
     reporter = new InMemoryReporter();
     tracer =
-        new com.uber.jaeger.Tracer.Builder("Angry Machine", reporter, new ConstSampler(true))
+        new com.uber.jaeger.Tracer.Builder("Angry Machine")
+            .withReporter(reporter)
+            .withSampler(new ConstSampler(true))
             .build();
     // Using deprecated constructor for test coverage
     undertest = new ServerFilter(tracer, null);
@@ -89,11 +91,11 @@ public class ServerFilterTest {
     assertEquals(uri.toString(), tags.get(Tags.HTTP_URL.getKey()));
     assertEquals("localhost", tags.get(Tags.PEER_HOSTNAME.getKey()));
 
-
     // Exercise catch blocks on filter methods for code coverage
     undertest.filter(null);
 
-    // For filter(requestContext, responseContext) we first need to make sure there's something in the traceContext
+    // For filter(requestContext, responseContext) we first need to make sure there's something in
+    // the traceContext
     undertest.filter(containerRequestContext);
     undertest.filter(containerRequestContext, null);
   }

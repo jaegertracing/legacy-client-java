@@ -44,10 +44,14 @@ public class JerseyServerFilterTest extends JerseyTest {
   @Override
   protected Application configure() {
     reporter = new InMemoryReporter();
-    Tracer tracer = new Tracer.Builder("world service", reporter, new ConstSampler(true)).build();
+    Tracer tracer =
+        new Tracer.Builder("world service")
+            .withReporter(reporter)
+            .withSampler(new ConstSampler(true))
+            .build();
 
-    ResourceConfig resourceConfig = new ResourceConfig(HelloResource.class,
-                                                       StormlordResource.class);
+    ResourceConfig resourceConfig =
+        new ResourceConfig(HelloResource.class, StormlordResource.class);
     TracingUtils.setTracer(tracer);
     undertest = new JerseyServerFilter(tracer, TracingUtils.getTraceContext());
     resourceConfig.register(undertest);
@@ -109,7 +113,7 @@ public class JerseyServerFilterTest extends JerseyTest {
 
     Set<Map.Entry<JerseyServerFilter.CacheKey, String>> entries = undertest.getCache().entrySet();
     Set<String> valueSet = new HashSet<>(2);
-    for (Map.Entry<JerseyServerFilter.CacheKey, String> entry: entries) {
+    for (Map.Entry<JerseyServerFilter.CacheKey, String> entry : entries) {
       valueSet.add(entry.getValue());
     }
 
@@ -124,5 +128,4 @@ public class JerseyServerFilterTest extends JerseyTest {
     assertEquals("GET", key.getHttpMethod());
     assertEquals(methodName, key.getResourceMethod().getName());
   }
-
 }

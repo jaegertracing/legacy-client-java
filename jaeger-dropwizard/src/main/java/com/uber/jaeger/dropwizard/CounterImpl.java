@@ -16,14 +16,14 @@ package com.uber.jaeger.dropwizard;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
-import com.uber.jaeger.metrics.Counter;
+import io.jaegertracing.internal.metrics.Counter;
 import java.util.Map;
 
 public class CounterImpl implements Counter {
   private final Meter meter;
 
   CounterImpl(String name, Map<String, String> tags, MetricRegistry registry) {
-    String metricName = com.uber.jaeger.metrics.Metrics.addTagsToMetricName(name, tags);
+    String metricName = io.jaegertracing.internal.metrics.Metrics.addTagsToMetricName(name, tags);
     meter = registry.meter(metricName);
   }
 

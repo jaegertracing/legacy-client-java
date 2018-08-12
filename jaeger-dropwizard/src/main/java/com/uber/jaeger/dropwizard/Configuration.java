@@ -22,11 +22,15 @@ import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracerFactory;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Configuration extends com.uber.jaeger.Configuration {
+public class Configuration {
   /**
    * When set, getTracer returns a Noop tracer
    */
   private final boolean disable;
+  /**
+   * Wrapped config object.
+   */
+  private final com.uber.jaeger.Configuration config;
 
   @JsonCreator
   public Configuration(
@@ -34,19 +38,22 @@ public class Configuration extends com.uber.jaeger.Configuration {
       @JsonProperty("disable") Boolean disable,
       @JsonProperty("sampler") SamplerConfiguration samplerConfig,
       @JsonProperty("reporter") ReporterConfiguration reporterConfig) {
-    super(serviceName, samplerConfig, reporterConfig);
+    config = new com.uber.jaeger.Configuration(serviceName).withSampler(samplerConfig).withReporter(reporterConfig);
     this.disable = disable == null ? false : disable;
   }
 
-  @Override
   public synchronized Tracer getTracer() {
     if (disable) {
       return NoopTracerFactory.create();
     }
-    return super.getTracer();
+    return config.getTracer();
   }
 
   public void setMetricRegistry(MetricRegistry metricRegistry) {
-    withMetricsFactory(new StatsFactory(metricRegistry));
+    config.withMetricsFactory(new StatsFactory(metricRegistry));
+  }
+
+  public void closeTracer() {
+    config.closeTracer();
   }
 }

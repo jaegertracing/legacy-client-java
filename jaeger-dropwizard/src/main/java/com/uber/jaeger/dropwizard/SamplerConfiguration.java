@@ -16,7 +16,7 @@ package com.uber.jaeger.dropwizard;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.uber.jaeger.Configuration;
+import io.jaegertracing.Configuration;
 
 public class SamplerConfiguration extends Configuration.SamplerConfiguration {
 
@@ -25,6 +25,9 @@ public class SamplerConfiguration extends Configuration.SamplerConfiguration {
       @JsonProperty("type") String type,
       @JsonProperty("param") Number param,
       @JsonProperty("managerHostPort") String managerHostPort) {
-    super(type, param, managerHostPort);
+    super();
+    withType(type);
+    withParam(param);
+    withManagerHostPort(managerHostPort);
   }
 }

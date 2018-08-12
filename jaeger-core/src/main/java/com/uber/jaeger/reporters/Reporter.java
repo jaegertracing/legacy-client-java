@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Uber Technologies, Inc
+ * Copyright (c) 2018, Uber Technologies, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -16,12 +16,6 @@ package com.uber.jaeger.reporters;
 
 import com.uber.jaeger.Span;
 
-/**
- * Reporter is the interface Tracer uses to report finished span to something that collects those
- * spans. Default implementation is remote reporter that sends spans out of process.
- */
-public interface Reporter {
+public interface Reporter extends io.jaegertracing.spi.Reporter {
   void report(Span span);
-
-  void close();
 }

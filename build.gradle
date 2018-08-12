@@ -12,6 +12,7 @@ plugins {
     id 'ru.vyarus.animalsniffer' version '1.4.2'
     id 'io.codearte.nexus-staging' version '0.11.0'
     id 'com.github.ben-manes.versions' version '0.17.0'
+    id 'de.undercouch.download' version '3.4.3'
 }
 
 ext.developmentVersion = '0.27.1-SNAPSHOT'

@@ -33,15 +33,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ClientSpanInjectionFilterTest {
 
-  private final Tracer tracer = new com.uber.jaeger.Tracer
-      .Builder("Angry Machine", new InMemoryReporter(), new ConstSampler(true))
-      .build();
+  private final Tracer tracer =
+      new com.uber.jaeger.Tracer.Builder("Angry Machine")
+          .withReporter(new InMemoryReporter())
+          .withSampler(new ConstSampler(true))
+          .build();
 
-  @Mock
-  private ClientRequestContext clientRequestContext;
+  @Mock private ClientRequestContext clientRequestContext;
 
-  @Mock
-  private ClientResponseContext clientResponseContext;
+  @Mock private ClientResponseContext clientResponseContext;
 
   @Test
   public void testFilter() throws Exception {
@@ -56,7 +56,7 @@ public class ClientSpanInjectionFilterTest {
     ClientSpanInjectionFilter filter = new ClientSpanInjectionFilter(tracer, null);
     filter.filter(clientRequestContext, clientResponseContext);
 
-    Map<String, Object> tags = ((com.uber.jaeger.Span)currentSpan).getTags();
+    Map<String, Object> tags = ((com.uber.jaeger.Span) currentSpan).getTags();
     assertEquals(200, tags.get(Tags.HTTP_STATUS.getKey()));
   }
 }
