@@ -22,13 +22,11 @@ import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uber.jaeger.Span;
-import com.uber.jaeger.context.ScopeManagerTraceContext;
-import com.uber.jaeger.context.TraceContext;
 import com.uber.jaeger.filters.jaxrs2.ClientFilter;
 import com.uber.jaeger.filters.jaxrs2.ServerRequestCarrier;
-import com.uber.jaeger.metrics.InMemoryStatsReporter;
 import com.uber.jaeger.reporters.InMemoryReporter;
 import com.uber.jaeger.samplers.ConstSampler;
+import io.jaegertracing.internal.metrics.InMemoryMetricsFactory;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
@@ -49,7 +47,7 @@ public class FilterIntegrationTest {
   private Client client;
   private Tracer tracer;
   private InMemoryReporter reporter;
-  private InMemoryStatsReporter metricsReporter;
+  private InMemoryMetricsFactory metricsFactory;
   public static final String BAGGAGE_KEY = "a-big-metal-door";
   private ObjectMapper mapper = new ObjectMapper();
 
@@ -58,11 +56,13 @@ public class FilterIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    metricsReporter = new InMemoryStatsReporter();
+    metricsFactory = new InMemoryMetricsFactory();
     reporter = new InMemoryReporter();
     tracer =
-        new com.uber.jaeger.Tracer.Builder("some-op-name", reporter, new ConstSampler(true))
-            .withStatsReporter(metricsReporter)
+        new com.uber.jaeger.Tracer.Builder("some-op-name")
+            .withReporter(reporter)
+            .withSampler(new ConstSampler(true))
+            .withMetricsFactory(metricsFactory)
             .build();
 
     // start the server
@@ -101,14 +101,14 @@ public class FilterIntegrationTest {
     assertTrue(callTree.validateTraceIds(traceId, isSampled));
 
     assertEquals(
-        3L, metricsReporter.counters.get("jaeger:traces.sampled=y.state=joined").longValue());
+        3L, metricsFactory.getCounter("jaeger:traces", "sampled=y,state=joined"));
     assertEquals(
         6L,
-        metricsReporter.counters.get("jaeger:finished_spans").longValue());
+        metricsFactory.getCounter("jaeger:finished_spans", ""));
     assertEquals(
-        1L, metricsReporter.counters.get("jaeger:traces.sampled=y.state=started").longValue());
+        1L, metricsFactory.getCounter("jaeger:traces", "sampled=y,state=started"));
     assertEquals(
-        7L, metricsReporter.counters.get("jaeger:started_spans.sampled=y").longValue());
+        7L, metricsFactory.getCounter("jaeger:started_spans", "sampled=y"));
   }
 
   /*

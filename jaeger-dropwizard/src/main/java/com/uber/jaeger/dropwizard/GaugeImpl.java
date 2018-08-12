@@ -19,11 +19,11 @@ import com.codahale.metrics.MetricRegistry;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class GaugeImpl implements com.uber.jaeger.metrics.Gauge {
+public class GaugeImpl implements io.jaegertracing.internal.metrics.Gauge {
   private final AtomicLong gaugeValue = new AtomicLong(0);
 
   GaugeImpl(String name, Map<String, String> tags, MetricRegistry registry) {
-    String metricName = com.uber.jaeger.metrics.Metrics.addTagsToMetricName(name, tags);
+    String metricName = io.jaegertracing.internal.metrics.Metrics.addTagsToMetricName(name, tags);
     registry.register(
         metricName,
         new Gauge<Number>() {

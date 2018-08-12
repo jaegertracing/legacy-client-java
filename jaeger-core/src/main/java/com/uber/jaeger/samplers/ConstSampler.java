@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Uber Technologies, Inc
+ * Copyright (c) 2018, Uber Technologies, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,55 +14,8 @@
 
 package com.uber.jaeger.samplers;
 
-import com.uber.jaeger.Constants;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import lombok.ToString;
-
-@SuppressWarnings("EqualsHashCode")
-@ToString
-public class ConstSampler implements Sampler {
-  public static final String TYPE = "const";
-
-  private final boolean decision;
-
-  private final Map<String, Object> tags;
-
+public class ConstSampler extends io.jaegertracing.internal.samplers.ConstSampler implements Sampler {
   public ConstSampler(boolean decision) {
-    this.decision = decision;
-    Map<String, Object> tags = new HashMap<String, Object>();
-    tags.put(Constants.SAMPLER_TYPE_TAG_KEY, TYPE);
-    tags.put(Constants.SAMPLER_PARAM_TAG_KEY, decision);
-    this.tags = Collections.unmodifiableMap(tags);
-  }
-
-  /**
-   * @param id A long that represents the traceid used to make a sampling decision the command line
-   * arguments.
-   * @return A boolean that says whether to sample.
-   */
-  @Override
-  public SamplingStatus sample(String operation, long id) {
-    return SamplingStatus.of(decision, tags);
-  }
-
-  @Override
-  public boolean equals(Object other) {
-    if (this == other) {
-      return true;
-    }
-    if (other instanceof ConstSampler) {
-      return this.decision == ((ConstSampler) other).decision;
-    }
-    return false;
-  }
-
-  /**
-   * Only implemented to satisfy the sampler interface
-   */
-  @Override
-  public void close() {
-    // nothing to do
+    super(decision);
   }
 }

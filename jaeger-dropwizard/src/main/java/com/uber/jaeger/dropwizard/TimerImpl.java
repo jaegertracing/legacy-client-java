@@ -19,11 +19,11 @@ import com.codahale.metrics.Timer;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class TimerImpl implements com.uber.jaeger.metrics.Timer {
+public class TimerImpl implements io.jaegertracing.internal.metrics.Timer {
   private final Timer timer;
 
   TimerImpl(String name, Map<String, String> tags, MetricRegistry registry) {
-    String metricName = com.uber.jaeger.metrics.Metrics.addTagsToMetricName(name, tags);
+    String metricName = io.jaegertracing.internal.metrics.Metrics.addTagsToMetricName(name, tags);
     timer = registry.timer(metricName);
   }
 

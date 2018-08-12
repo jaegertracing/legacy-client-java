@@ -54,7 +54,7 @@ public class StatsFactoryTest {
         };
     long expectedValue = 1000;
 
-    com.uber.jaeger.metrics.Counter cntr = statsFactory.createCounter(name, tags);
+    io.jaegertracing.internal.metrics.Counter cntr = statsFactory.createCounter(name, tags);
     cntr.inc(expectedValue);
 
     verify(mockCounter).mark(expectedValue);
@@ -90,7 +90,7 @@ public class StatsFactoryTest {
         };
     long expectedValue = 1000;
 
-    com.uber.jaeger.metrics.Timer timer = statsFactory.createTimer(name, tags);
+    io.jaegertracing.internal.metrics.Timer timer = statsFactory.createTimer(name, tags);
     timer.durationMicros(expectedValue);
 
     verify(mockTimer).update(expectedValue, TimeUnit.MICROSECONDS);

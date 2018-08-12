@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Uber Technologies, Inc
+ * Copyright (c) 2018, Uber Technologies, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -15,37 +15,37 @@
 package com.uber.jaeger.reporters;
 
 import com.uber.jaeger.Span;
+import io.jaegertracing.internal.JaegerSpan;
+
 import java.util.ArrayList;
 import java.util.List;
-import lombok.ToString;
 
-@ToString
 public class InMemoryReporter implements Reporter {
-  private final List<Span> spans;
+  private final io.jaegertracing.internal.reporters.InMemoryReporter reporter =
+      new io.jaegertracing.internal.reporters.InMemoryReporter();
 
-  public InMemoryReporter() {
-    this.spans = new ArrayList<Span>();
+  public InMemoryReporter() {}
+
+  @Override
+  public void report(JaegerSpan span) {
+    reporter.report(span);
   }
 
   @Override
   public void report(Span span) {
-    synchronized (this) {
-      spans.add(span);
-    }
+    report((JaegerSpan) span);
   }
 
   @Override
-  public void close() {}
-
-  public List<Span> getSpans() {
-    synchronized (this) {
-      return spans;
-    }
+  public void close() {
+    reporter.close();
   }
 
-  public void clear() {
-    synchronized (this) {
-      spans.clear();
+  public List<Span> getSpans() {
+    List<Span> result = new ArrayList<Span>();
+    for (JaegerSpan span : reporter.getSpans()) {
+      result.add((Span) span);
     }
+    return result;
   }
 }

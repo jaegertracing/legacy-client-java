@@ -16,7 +16,7 @@ package com.uber.jaeger.dropwizard;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.uber.jaeger.Configuration;
+import io.jaegertracing.Configuration;
 
 public class ReporterConfiguration extends Configuration.ReporterConfiguration {
 
@@ -27,6 +27,10 @@ public class ReporterConfiguration extends Configuration.ReporterConfiguration {
       @JsonProperty("agentPort") Integer agentPort,
       @JsonProperty("flushIntervalMs") Integer flushIntervalMs,
       @JsonProperty("maxQueueSize") Integer maxQueueSize) {
-    super(logSpans, agentHost, agentPort, flushIntervalMs, maxQueueSize);
+    super();
+    withLogSpans(logSpans);
+    withSender(new Configuration.SenderConfiguration().withAgentHost(agentHost).withAgentPort(agentPort));
+    withFlushInterval(flushIntervalMs);
+    withMaxQueueSize(maxQueueSize);
   }
 }

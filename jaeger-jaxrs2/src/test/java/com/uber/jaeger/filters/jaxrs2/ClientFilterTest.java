@@ -40,8 +40,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
- * Tests that {@link ClientFilter} produces a span and sets tags correctly. See also:
- * {@link FilterIntegrationTest} for a complete Client/Server filter integration test
+ * Tests that {@link ClientFilter} produces a span and sets tags correctly. See also: {@link
+ * FilterIntegrationTest} for a complete Client/Server filter integration test
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ClientFilterTest {
@@ -58,7 +58,9 @@ public class ClientFilterTest {
   public void setUp() throws Exception {
     reporter = new InMemoryReporter();
     tracer =
-        new com.uber.jaeger.Tracer.Builder("Angry Machine", reporter, new ConstSampler(true))
+        new com.uber.jaeger.Tracer.Builder("Angry Machine")
+            .withReporter(reporter)
+            .withSampler(new ConstSampler(true))
             .build();
     // Using deprecated constructor for test coverage
     undertest = new ClientFilter(tracer, null);

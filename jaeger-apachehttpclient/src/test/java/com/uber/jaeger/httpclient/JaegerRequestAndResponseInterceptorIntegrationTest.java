@@ -62,7 +62,7 @@ public class JaegerRequestAndResponseInterceptorIntegrationTest {
         .respond(HttpResponse.response().withStatusCode(200));
     reporter = new InMemoryReporter();
     Sampler sampler = new ConstSampler(true);
-    tracer = new Tracer.Builder("test_service", reporter, sampler).build();
+    tracer = new Tracer.Builder("test_service").withReporter(reporter).withSampler(sampler).build();
 
     parentSpan = (Span) tracer.buildSpan("parent_operation").startManual();
     parentSpan.setBaggageItem(BAGGAGE_KEY, BAGGAGE_VALUE);

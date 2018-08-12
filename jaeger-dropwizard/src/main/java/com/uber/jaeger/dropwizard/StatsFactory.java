@@ -15,10 +15,10 @@
 package com.uber.jaeger.dropwizard;
 
 import com.codahale.metrics.MetricRegistry;
-import com.uber.jaeger.metrics.Counter;
-import com.uber.jaeger.metrics.Gauge;
-import com.uber.jaeger.metrics.MetricsFactory;
-import com.uber.jaeger.metrics.Timer;
+import io.jaegertracing.internal.metrics.Counter;
+import io.jaegertracing.internal.metrics.Gauge;
+import io.jaegertracing.internal.metrics.Timer;
+import io.jaegertracing.spi.MetricsFactory;
 import java.util.Map;
 
 public class StatsFactory implements MetricsFactory {

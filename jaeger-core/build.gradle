@@ -1,15 +1,12 @@
 description = 'Core library for jaeger-client'
 
 dependencies {
-    compile project(':jaeger-thrift')
+    compile group: 'io.jaegertracing', name: 'jaeger-core', version: '0.30.4-SNAPSHOT'
     compile group: 'io.opentracing', name: 'opentracing-api', version: opentracingVersion
     compile group: 'io.opentracing', name: 'opentracing-util', version: opentracingVersion
     compile group: 'com.google.code.gson', name: 'gson', version: gsonVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
     compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.9.0'
-
-    // Testing frameworks
-    testCompile project(path: ':jaeger-thrift', configuration: 'tests')
 
     // Jersey dependencies for unit tests
     testCompile group: 'org.glassfish.jersey.test-framework.providers', name: 'jersey-test-framework-provider-grizzly2', version: jerseyVersion
@@ -56,4 +53,3 @@ task jaegerVersion {
 }
 
 compileJava.dependsOn jaegerVersion
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Uber Technologies, Inc
+ * Copyright (c) 2018, Uber Technologies, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,19 +14,5 @@
 
 package com.uber.jaeger.samplers;
 
-/**
- * Sampler is responsible for deciding if a new trace should be sampled and captured for storage.
- */
-public interface Sampler {
-  /**
-   * @param operation The operation name set on the span
-   * @param id The traceId on the span
-   * @return whether or not the new trace should be sampled
-   */
-  SamplingStatus sample(String operation, long id);
-
-  /**
-   * Release any resources used by the sampler.
-   */
-  void close();
+public interface Sampler extends io.jaegertracing.spi.Sampler {
 }

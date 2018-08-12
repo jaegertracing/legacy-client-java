@@ -74,11 +74,11 @@ public class ServerFilter implements ContainerRequestFilter, ContainerResponseFi
 
       // TODO(oibe) make X_UBER_SOURCE configurable for open source projects
       MultivaluedMap<String, String> headers = containerRequestContext.getHeaders();
-      if (headers.containsKey(com.uber.jaeger.Constants.X_UBER_SOURCE)) {
+      if (headers.containsKey(io.jaegertracing.internal.Constants.X_UBER_SOURCE)) {
         builder =
             builder.withTag(
                 Tags.PEER_SERVICE.getKey(),
-                headers.getFirst(com.uber.jaeger.Constants.X_UBER_SOURCE));
+                headers.getFirst(io.jaegertracing.internal.Constants.X_UBER_SOURCE));
       }
 
       ServerRequestCarrier carrier = new ServerRequestCarrier(containerRequestContext);
