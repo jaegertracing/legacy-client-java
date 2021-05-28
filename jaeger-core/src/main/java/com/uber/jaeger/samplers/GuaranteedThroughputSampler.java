@@ -62,7 +62,7 @@ public final class GuaranteedThroughputSampler implements Sampler {
       isUpdated = true;
     }
     if (lowerBound != lowerBoundSampler.getMaxTracesPerSecond()) {
-      lowerBoundSampler = new RateLimitingSampler(lowerBound);
+      lowerBoundSampler.update(lowerBound);
       isUpdated = true;
     }
     return isUpdated;

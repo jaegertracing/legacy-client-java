@@ -43,13 +43,15 @@ public class RemoteControlledSamplerTest {
   @Mock private SamplingManager samplingManager;
   @Mock private Sampler initialSampler;
   private Metrics metrics;
+  private InMemoryStatsReporter metricsReporter;
   private static final String SERVICE_NAME = "thachi mamu";
 
   private RemoteControlledSampler undertest;
 
   @Before
   public void setUp() throws Exception {
-    metrics = Metrics.fromStatsReporter(new InMemoryStatsReporter());
+    metricsReporter = new InMemoryStatsReporter();
+    metrics = Metrics.fromStatsReporter(metricsReporter);
     undertest = new RemoteControlledSampler(SERVICE_NAME, samplingManager, initialSampler, metrics);
   }
 
@@ -80,6 +82,22 @@ public class RemoteControlledSamplerTest {
     undertest.updateSampler();
 
     assertEquals(new RateLimitingSampler(tracesPerSecond), undertest.getSampler());
+    assertEquals(1L, (long) metricsReporter.counters.get("jaeger:sampler_updates.result=ok"));
+
+    // Update should be short circuited if using the same strategy
+    undertest.updateSampler();
+    assertEquals(1L, (long) metricsReporter.counters.get("jaeger:sampler_updates.result=ok"));
+
+    // Try updating an already existing rateLimitingSampler
+    final int newTracesPerSecond = 24;
+    rateLimitingResponse = new SamplingStrategyResponse(null,
+      new RateLimitingSamplingStrategy(newTracesPerSecond), null);
+    when(samplingManager.getSamplingStrategy(SERVICE_NAME)).thenReturn(rateLimitingResponse);
+
+    undertest.updateSampler();
+      
+    assertEquals(new RateLimitingSampler(newTracesPerSecond), undertest.getSampler());
+    assertEquals(2L, (long) metricsReporter.counters.get("jaeger:sampler_updates.result=ok"));
   }
 
   @Test

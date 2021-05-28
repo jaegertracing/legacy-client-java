@@ -16,7 +16,6 @@ package com.uber.jaeger.samplers;
 
 import com.uber.jaeger.Constants;
 import com.uber.jaeger.utils.RateLimiter;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
@@ -26,30 +25,29 @@ import lombok.ToString;
 @ToString(exclude = "rateLimiter")
 public class RateLimitingSampler implements Sampler {
   public static final String TYPE = "ratelimiting";
+  private static final double MINUMUM_BALANCE = 1.0;
 
   private final RateLimiter rateLimiter;
   @Getter
-  private final double maxTracesPerSecond;
+  private double maxTracesPerSecond;
   private final Map<String, Object> tags;
 
   public RateLimitingSampler(double maxTracesPerSecond) {
     this.maxTracesPerSecond = maxTracesPerSecond;
-    double maxBalance = maxTracesPerSecond < 1.0 ? 1.0 : maxTracesPerSecond;
-    this.rateLimiter = new RateLimiter(maxTracesPerSecond, maxBalance);
+    this.rateLimiter = new RateLimiter(maxTracesPerSecond, getMaxBalance(maxTracesPerSecond));
 
-    Map<String, Object> tags = new HashMap<String, Object>();
+    this.tags = new HashMap<String, Object>();
     tags.put(Constants.SAMPLER_TYPE_TAG_KEY, TYPE);
     tags.put(Constants.SAMPLER_PARAM_TAG_KEY, maxTracesPerSecond);
-    this.tags = Collections.unmodifiableMap(tags);
   }
 
   @Override
-  public SamplingStatus sample(String operation, long id) {
-    return SamplingStatus.of(this.rateLimiter.checkCredit(1.0), tags);
+  public synchronized SamplingStatus sample(String operation, long id) {
+    return SamplingStatus.of(this.rateLimiter.checkCredit(MINUMUM_BALANCE), tags);
   }
 
   @Override
-  public boolean equals(Object other) {
+  public synchronized boolean equals(Object other) {
     if (this == other) {
       return true;
     }
@@ -57,6 +55,20 @@ public class RateLimitingSampler implements Sampler {
       return this.maxTracesPerSecond == ((RateLimitingSampler) other).maxTracesPerSecond;
     }
     return false;
+  }
+
+  public synchronized boolean update(double maxTracesPerSecond) {
+    if (this.maxTracesPerSecond == maxTracesPerSecond) {
+      return false;
+    }
+    this.maxTracesPerSecond = maxTracesPerSecond;
+    rateLimiter.update(maxTracesPerSecond, getMaxBalance(maxTracesPerSecond));
+    tags.put(Constants.SAMPLER_PARAM_TAG_KEY, maxTracesPerSecond);
+    return true;
+  }
+
+  private double getMaxBalance(double maxTracesPerSecond) {
+    return maxTracesPerSecond < MINUMUM_BALANCE ? MINUMUM_BALANCE : maxTracesPerSecond;
   }
 
   /**

@@ -46,7 +46,7 @@ public class RateLimiterTest {
   @Test
   public void testRateLimiterWholeNumber() {
     MockClock clock = new MockClock();
-    RateLimiter limiter = new RateLimiter(2.0, 2.0, clock);
+    RateLimiter limiter = new RateLimiter(2.0, 2.0, clock, 2.0);
 
     long currentTime = TimeUnit.MICROSECONDS.toNanos(100);
     clock.timeNanos = currentTime;
@@ -79,7 +79,7 @@ public class RateLimiterTest {
   @Test
   public void testRateLimiterLessThanOne() {
     MockClock clock = new MockClock();
-    RateLimiter limiter = new RateLimiter(0.5, 0.5, clock);
+    RateLimiter limiter = new RateLimiter(0.5, 0.5, clock, 0.5);
 
     long currentTime = TimeUnit.MICROSECONDS.toNanos(100);
     clock.timeNanos = currentTime;
@@ -112,7 +112,7 @@ public class RateLimiterTest {
   @Test
   public void testRateLimiterMaxBalance() {
     MockClock clock = new MockClock();
-    RateLimiter limiter = new RateLimiter(0.1, 1.0, clock);
+    RateLimiter limiter = new RateLimiter(0.1, 1.0, clock, 1.0);
 
     long currentTime = TimeUnit.MICROSECONDS.toNanos(100);
     clock.timeNanos = currentTime;
@@ -126,4 +126,23 @@ public class RateLimiterTest {
     assertTrue(limiter.checkCredit(1.0));
     assertFalse(limiter.checkCredit(1.0));
   }
+
+  @Test
+  public void testRateLimiterUpdate() {
+    RateLimiter limiter = new RateLimiter(3.0, 3.0, new MockClock(), 3.0);
+  
+    // After this call, there should be 2 credits left.
+    assertTrue(limiter.checkCredit(1.0));
+  
+    // Update to a max balance of 1 should only leave 2/3 credits, not enough for a message.
+    limiter.update(1.0, 1.0);
+    assertFalse(limiter.checkCredit(1.0));
+  
+    // Revert back to max balance of 3, there should be 2 credits available.
+    limiter.update(3.0, 3.0);
+    assertTrue(limiter.checkCredit(1.0));
+    assertTrue(limiter.checkCredit(1.0));
+    assertFalse(limiter.checkCredit(1.0));
+  }
 }
+

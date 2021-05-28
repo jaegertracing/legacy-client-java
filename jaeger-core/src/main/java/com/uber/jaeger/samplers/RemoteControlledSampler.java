@@ -130,7 +130,7 @@ public class RemoteControlledSampler implements Sampler {
       sampler = new ProbabilisticSampler(strategy.getSamplingRate());
     } else if (response.getRateLimitingSampling() != null) {
       RateLimitingSamplingStrategy strategy = response.getRateLimitingSampling();
-      sampler = new RateLimitingSampler(strategy.getMaxTracesPerSecond());
+      sampler = updateRateLimitingSampler(strategy.getMaxTracesPerSecond());
     } else {
       metrics.samplerParsingFailure.inc(1);
       log.error("No strategy present in response. Not updating sampler.");
@@ -143,6 +143,16 @@ public class RemoteControlledSampler implements Sampler {
         metrics.samplerUpdated.inc(1);
       }
     }
+  }
+
+  private Sampler updateRateLimitingSampler(double maxTracesPerSecond) {
+    if (this.sampler instanceof RateLimitingSampler) {
+      if (((RateLimitingSampler) this.sampler).update(maxTracesPerSecond)) {
+        metrics.samplerUpdated.inc(1);
+      }
+      return this.sampler;
+    }
+    return new RateLimitingSampler(maxTracesPerSecond);
   }
 
   private synchronized void updatePerOperationSampler(OperationSamplingParameters samplingParameters) {
