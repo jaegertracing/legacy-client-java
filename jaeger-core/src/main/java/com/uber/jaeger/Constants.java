@@ -49,4 +49,9 @@ public class Constants {
    * The name used to report ip of the process.
    */
   public static final String TRACER_IP_TAG_KEY = "ip";
+
+  /**
+   * The name used to report unique identifier for this client.
+   */
+  public static final String TRACER_CLIENT_ID_TAG_KEY = "uuid";
 }

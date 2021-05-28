@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Uber Technologies, Inc
+ * Copyright (c) 2016-2018, Uber Technologies, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,6 +14,7 @@
 
 package com.uber.jaeger.mocks;
 
+import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -41,6 +42,27 @@ public class MockAgentResource {
   public String getBaggageRestrictions(@QueryParam("service") String serviceName) {
     if (serviceName.equals("clairvoyant")) {
       return "[{\"baggageKey\":\"key\",\"maxValueLength\":\"10\"}]";
+    }
+    throw new WebApplicationException();
+  }
+
+  @GET
+  @Path("credits")
+  @Produces(MediaType.APPLICATION_JSON)
+  public String getCredits(
+      @QueryParam("uuid") int clientId,
+      @QueryParam("service") String serviceName,
+      @QueryParam("operations") List<String> operations) {
+    if (serviceName.equals("clairvoyant")) {
+      StringBuffer buffer = new StringBuffer("{ \"balances\": [");
+      for (int i = 0; i < operations.size(); i++) {
+        if (i > 0) {
+          buffer.append(", ");
+        }
+        buffer.append("{ \"operation\": \"" + operations.get(i) + "\", \"balance\": 1 }");
+      }
+      buffer.append("]}");
+      return buffer.toString();
     }
     throw new WebApplicationException();
   }

@@ -48,7 +48,7 @@ local.properties
 *.iws
 
 # IntelliJ
-/out/
+out/
 
 ### Intellij Patch ###
 # Comment Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-215987721

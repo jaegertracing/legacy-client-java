@@ -33,15 +33,18 @@ import com.uber.jaeger.reporters.Reporter;
 import com.uber.jaeger.samplers.RemoteControlledSampler;
 import com.uber.jaeger.samplers.Sampler;
 import com.uber.jaeger.samplers.SamplingStatus;
+import com.uber.jaeger.throttler.Throttler;
 import com.uber.jaeger.utils.Clock;
 import com.uber.jaeger.utils.SystemClock;
 import com.uber.jaeger.utils.Utils;
+
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.ThreadLocalScopeManager;
+
 import java.io.Closeable;
 import java.io.InputStream;
 import java.net.Inet4Address;
@@ -53,6 +56,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
+
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,6 +73,7 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
   private final String serviceName;
   private final Reporter reporter;
   private final Sampler sampler;
+  private final Throttler debugThrottler;
   private final PropagationRegistry registry;
   private final Clock clock;
   private final Metrics metrics;
@@ -89,6 +95,7 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
       boolean zipkinSharedRpcSpan,
       ScopeManager scopeManager,
       BaggageRestrictionManager baggageRestrictionManager,
+      Throttler debugThrottler,
       boolean expandExceptionLogs) {
     this.serviceName = serviceName;
     this.reporter = reporter;
@@ -99,6 +106,7 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
     this.zipkinSharedRpcSpan = zipkinSharedRpcSpan;
     this.scopeManager = scopeManager;
     this.baggageSetter = new BaggageSetter(baggageRestrictionManager, metrics);
+    this.debugThrottler = debugThrottler;
     this.expandExceptionLogs = expandExceptionLogs;
 
     this.version = loadVersion();
@@ -129,6 +137,12 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
       }
     }
     this.ipv4 = ipv4;
+    if (this.debugThrottler != null) {
+      final int clientId = new Random().nextInt(Integer.MAX_VALUE - 1) + 1;
+      debugThrottler.setProcess(new TracedProcess(serviceName, clientId, tags));
+      tags.put(Constants.TRACER_CLIENT_ID_TAG_KEY, clientId);
+    }
+
     this.tags = Collections.unmodifiableMap(tags);
   }
 
@@ -290,8 +304,8 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
       long id = Utils.uniqueId();
 
       byte flags = 0;
-      if (debugId != null) {
-        flags = (byte) (flags | SpanContext.flagSampled | SpanContext.flagDebug);
+      if (debugId != null && isDebugAllowed(operationName)) {
+        flags |= (byte) (SpanContext.flagSampled | SpanContext.flagDebug);
         tags.put(Constants.DEBUG_ID_HEADER_KEY, debugId);
         metrics.traceStartedSampled.inc(1);
       } else {
@@ -317,7 +331,7 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
         return references.get(0).getSpanContext().baggage();
       }
 
-      for (Reference reference: references) {
+      for (Reference reference : references) {
         if (reference.getSpanContext().baggage() != null) {
           if (baggage == null) {
             baggage = new HashMap<String, String>();
@@ -362,7 +376,7 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
 
     private SpanContext preferredReference() {
       Reference preferredReference = references.get(0);
-      for (Reference reference: references) {
+      for (Reference reference : references) {
         // childOf takes precedence as a preferred parent
         if (References.CHILD_OF.equals(reference.getType())
             && !References.CHILD_OF.equals(preferredReference.getType())) {
@@ -458,12 +472,14 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
 
   /**
    * Builds Jaeger Tracer with options.
+   *
    * @deprecated use package {@code io.jaegertracing} instead. See https://github.com/jaegertracing/legacy-client-java/issues/13
    */
   @Deprecated
   public static final class Builder {
     private Sampler sampler;
     private Reporter reporter;
+    private Throttler debugThrottler;
     private final PropagationRegistry registry = new PropagationRegistry();
     private Metrics metrics = new Metrics(new NoopMetricsFactory());
     private final String serviceName;
@@ -511,6 +527,14 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
       return this;
     }
 
+    /**
+     * @param debugThrottler debug throttler.
+     */
+    public Builder withThrottler(Throttler debugThrottler) {
+      this.debugThrottler = debugThrottler;
+      return this;
+    }
+
     public <T> Builder registerInjector(Format<T> format, Injector<T> injector) {
       this.registry.register(format, injector);
       return this;
@@ -531,7 +555,8 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
     }
 
     /**
-     * Creates a new {@link Metrics} to be used with the tracer, backed by the given {@link MetricsFactory}
+     * Creates a new {@link Metrics} to be used with the tracer, backed by the given {@link MetricsFactory}.
+     *
      * @param metricsFactory the metrics factory to use
      * @return this instance of the builder
      */
@@ -604,7 +629,7 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
             .build();
       }
       return new Tracer(serviceName, reporter, sampler, registry, clock, metrics, tags,
-          zipkinSharedRpcSpan, scopeManager, baggageRestrictionManager, expandExceptionLogs);
+          zipkinSharedRpcSpan, scopeManager, baggageRestrictionManager, debugThrottler, expandExceptionLogs);
     }
 
     public static String checkValidServiceName(String serviceName) {
@@ -650,5 +675,12 @@ public class Tracer implements io.opentracing.Tracer, Closeable {
 
   boolean isExpandExceptionLogs() {
     return this.expandExceptionLogs;
+  }
+
+  boolean isDebugAllowed(String operationName) {
+    if (debugThrottler == null) {
+      return true;
+    }
+    return debugThrottler.isAllowed(operationName);
   }
 }
